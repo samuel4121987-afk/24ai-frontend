@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useCommandStore } from '../../../store/commandStore';
+import { API_CONFIG, getApiUrl } from '../../../config/api';
 
 interface CommandBarProps {
   connectionStatus: 'disconnected' | 'connecting' | 'connected';
@@ -15,19 +16,49 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
 
     const commandId = Date.now().toString();
     addCommand(command);
-
-    // Simulate command execution
     const startTime = Date.now();
-    
-    setTimeout(() => {
+
+    try {
+      // Send command to Railway backend
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.EXECUTE_COMMAND), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          command: command,
+          access_code: 'test-code', // This should come from user's session
+        }),
+      });
+
+      const executionTime = Date.now() - startTime;
+
+      if (response.ok) {
+        const data = await response.json();
+        updateCommandStatus(
+          commandId,
+          'success',
+          executionTime,
+          data.message || `Command "${command}" executed successfully`
+        );
+      } else {
+        const error = await response.json();
+        updateCommandStatus(
+          commandId,
+          'error',
+          executionTime,
+          error.detail || 'Command execution failed'
+        );
+      }
+    } catch (error) {
       const executionTime = Date.now() - startTime;
       updateCommandStatus(
         commandId,
-        'success',
+        'error',
         executionTime,
-        `Command "${command}" executed successfully`
+        `Failed to connect to backend: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
-    }, 1500);
+    }
 
     setCommand('');
   };

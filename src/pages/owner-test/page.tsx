@@ -4,6 +4,7 @@ import ScreenMonitor from '../dashboard/components/ScreenMonitor';
 import CommandBar from '../dashboard/components/CommandBar';
 import ActivityFeed from '../dashboard/components/ActivityFeed';
 import AccessCodeModal from './components/AccessCodeModal';
+import SetupInstructions from './components/SetupInstructions';
 
 export default function OwnerTestPage() {
   const [isVerified, setIsVerified] = useState(false);
@@ -107,6 +108,11 @@ export default function OwnerTestPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Setup Instructions */}
+        <div className="mb-6">
+          <SetupInstructions />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Screen Monitor */}
           <div className="lg:col-span-2">

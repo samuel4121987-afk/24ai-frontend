@@ -1,11 +1,66 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { API_CONFIG, getWebSocketUrl } from '../../../config/api';
 
 export default function ScreenMonitor() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [quality, setQuality] = useState<'HD' | 'SD'>('HD');
   const [fps, setFps] = useState(5);
   const [showControls, setShowControls] = useState(false);
+  const [screenImage, setScreenImage] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [latency, setLatency] = useState(0);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    // Connect to Railway backend WebSocket for screen capture
+    const accessCode = 'test-code'; // This should come from user's session
+    const wsUrl = getWebSocketUrl(API_CONFIG.WS_PATHS.DASHBOARD(accessCode));
+    
+    try {
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        console.log('Connected to Railway backend');
+        setIsConnected(true);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'screen_frame') {
+            // Update screen image
+            setScreenImage(data.image);
+            setLatency(data.latency || 0);
+            setFps(data.fps || 5);
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setIsConnected(false);
+      };
+
+      ws.onclose = () => {
+        console.log('Disconnected from Railway backend');
+        setIsConnected(false);
+      };
+    } catch (error) {
+      console.error('Failed to connect to WebSocket:', error);
+      setIsConnected(false);
+    }
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
 
   return (
     <div className="flex-1 bg-[#161B22] rounded-2xl border border-gray-800 overflow-hidden flex flex-col">
@@ -49,18 +104,32 @@ export default function ScreenMonitor() {
         onMouseEnter={() => setShowControls(true)}
         onMouseLeave={() => setShowControls(false)}
       >
-        {/* Simulated Screen Content */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4"
-            ></motion.div>
-            <p className="text-gray-400 text-sm">Waiting for screen capture...</p>
-            <p className="text-gray-600 text-xs mt-2">Install and connect the desktop agent to start monitoring</p>
+        {/* Screen Content */}
+        {screenImage ? (
+          <img
+            src={`data:image/jpeg;base64,${screenImage}`}
+            alt="Screen capture"
+            className="w-full h-full object-contain"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4"
+              ></motion.div>
+              <p className="text-gray-400 text-sm">
+                {isConnected ? 'Waiting for screen capture...' : 'Connecting to backend...'}
+              </p>
+              <p className="text-gray-600 text-xs mt-2">
+                {isConnected 
+                  ? 'Install and run the desktop agent to start monitoring'
+                  : 'Establishing connection to Railway backend...'}
+              </p>
+            </div>
           </div>
-        </div>
+        )
 
         {/* Screen Border Glow */}
         <div className="absolute inset-0 border-2 border-cyan-500/30 rounded-lg pointer-events-none"></div>
@@ -89,7 +158,7 @@ export default function ScreenMonitor() {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <i className="ri-time-line text-gray-500"></i>
-            <span className="text-gray-400">Latency: <strong className="text-cyan-400">48ms</strong></span>
+            <span className="text-gray-400">Latency: <strong className="text-cyan-400">{latency}ms</strong></span>
           </div>
           <div className="flex items-center gap-2">
             <i className="ri-signal-wifi-line text-gray-500"></i>

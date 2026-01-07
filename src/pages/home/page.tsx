@@ -17,7 +17,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('/owner-test');
     }
   }, [isAuthenticated, navigate]);
 

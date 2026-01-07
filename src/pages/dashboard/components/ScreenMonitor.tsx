@@ -129,7 +129,7 @@ export default function ScreenMonitor() {
               </p>
             </div>
           </div>
-        )
+        )}
 
         {/* Screen Border Glow */}
         <div className="absolute inset-0 border-2 border-cyan-500/30 rounded-lg pointer-events-none"></div>

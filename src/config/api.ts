@@ -14,8 +14,8 @@ export const API_CONFIG = {
   
   // WebSocket Paths
   WS_PATHS: {
-    AGENT: (accessCode: string) => `/ws/agent/${accessCode}`,
-    DASHBOARD: (accessCode: string) => `/ws/dashboard/${accessCode}`,
+    AGENT: (accessCode: string) => /ws?code=${accessCode}&client_type=agent
+    DASHBOARD: (accessCode: string) =>/ws?code=${accessCode}&client_type=web
   },
   
   // Screen Capture Settings

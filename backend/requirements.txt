@@ -1,9 +1,3 @@
-# Build tooling (helps avoid metadata-generation-failed in isolated builds)
-pip>=24.0
-setuptools>=70.0.0
-wheel>=0.42.0
-
-# App deps (Python 3.11 compatible)
 fastapi==0.115.7
 uvicorn==0.34.0
 websockets==15.0.1

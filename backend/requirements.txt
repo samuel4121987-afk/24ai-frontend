@@ -5,7 +5,7 @@ wheel>=0.42.0
 
 # App deps (Python 3.11 compatible)
 fastapi==0.115.7
-uvicorn[standard]==0.40.0
+uvicorn==0.34.0
 websockets==15.0.1
 python-multipart==0.0.21
 pydantic==2.10.6

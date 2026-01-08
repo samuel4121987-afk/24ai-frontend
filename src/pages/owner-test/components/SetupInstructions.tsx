@@ -158,11 +158,11 @@ export default function SetupInstructions() {
                 <div className="space-y-1 font-mono text-xs">
                   <div className="flex items-center gap-2">
                     <span className="text-purple-400">API:</span>
-                    <span className="text-purple-300">https://24ai-backend-production.up.railway.app</span>
+                    <span className="text-purple-300">https://twodai-backend.onrender.com</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-purple-400">WebSocket:</span>
-                    <span className="text-purple-300">wss://24ai-backend-production.up.railway.app/ws</span>
+                    <span className="text-purple-300">wss://twodai-backend.onrender.com/ws</span>
                   </div>
                 </div>
               </div>

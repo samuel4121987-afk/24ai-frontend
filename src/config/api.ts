@@ -1,9 +1,9 @@
 // API Configuration for Production Deployment
 
 export const API_CONFIG = {
-  // Railway Backend URLs
-  BACKEND_URL: 'https://24ai-backend-production.up.railway.app',
-  WS_URL: 'wss://24ai-backend-production.up.railway.app/ws',
+  // Render Backend URLs
+  BACKEND_URL: 'https://twodai-backend.onrender.com',
+  WS_URL: 'wss://twodai-backend.onrender.com/ws',
   
   // API Endpoints
   ENDPOINTS: {

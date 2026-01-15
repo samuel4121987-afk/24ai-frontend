@@ -41,26 +41,34 @@ export default function SetupInstructions() {
     },
   ];
 
-  const downloadAgent = () => {
-    // Download the desktop agent files from GitHub raw URLs
+  const downloadAgent = async () => {
+    // Download the desktop agent files from GitHub raw URLs using fetch
     const files = [
-      { name: 'agent.py', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/python-agent/agent.py' },
-      { name: 'requirements.txt', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/python-agent/requirements.txt' },
+      { name: 'agent.py', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/agent.py' },
+      { name: 'requirements.txt', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/requirements.txt' },
+      { name: 'install.py', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/install.py' },
       { name: 'README.md', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/README.md' }
     ];
 
-    // Download each file
-    files.forEach((file, index) => {
-      setTimeout(() => {
+    // Download each file using fetch and blob
+    for (const file of files) {
+      try {
+        const response = await fetch(file.url);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = file.url;
+        link.href = url;
         link.download = file.name;
-        link.target = '_blank';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      }, index * 500); // Stagger downloads by 500ms to avoid browser blocking
-    });
+        window.URL.revokeObjectURL(url);
+        // Wait 500ms between downloads
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error(`Failed to download ${file.name}:`, error);
+      }
+    }
   };
 
   return (

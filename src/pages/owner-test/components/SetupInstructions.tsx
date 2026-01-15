@@ -42,8 +42,25 @@ export default function SetupInstructions() {
   ];
 
   const downloadAgent = () => {
-    // This would trigger download of the desktop agent
-    window.open('https://github.com/samuel4121987-afk/24ai-frontend/tree/main/desktop-agent', '_blank');
+    // Download the desktop agent files from GitHub raw URLs
+    const files = [
+      { name: 'agent.py', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/python-agent/agent.py' },
+      { name: 'requirements.txt', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/python-agent/requirements.txt' },
+      { name: 'README.md', url: 'https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/README.md' }
+    ];
+
+    // Download each file
+    files.forEach((file, index) => {
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = file.url;
+        link.download = file.name;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, index * 500); // Stagger downloads by 500ms to avoid browser blocking
+    });
   };
 
   return (

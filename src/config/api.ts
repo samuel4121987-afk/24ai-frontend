@@ -2,8 +2,8 @@
 
 export const API_CONFIG = {
   // Render Backend URLs
-  BACKEND_URL: 'https://twodai-backend.onrender.com',
-  WS_URL: 'wss://twodai-backend.onrender.com/ws',
+  BACKEND_URL: 'https://two4ai-backend.onrender.com',
+  WS_URL: 'wss://two4ai-backend.onrender.com/ws',
   
   // API Endpoints
   ENDPOINTS: {
@@ -14,8 +14,8 @@ export const API_CONFIG = {
   
   // WebSocket Paths
   WS_PATHS: {
-    AGENT: (accessCode: string) => /ws?code=${accessCode}&client_type=agent
-    DASHBOARD: (accessCode: string) =>/ws?code=${accessCode}&client_type=web
+    AGENT: (accessCode: string) => `/ws?code=${accessCode}&client_type=agent`,
+    DASHBOARD: (accessCode: string) => `/ws?code=${accessCode}&client_type=web`
   },
   
   // Screen Capture Settings

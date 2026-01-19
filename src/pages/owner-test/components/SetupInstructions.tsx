@@ -41,9 +41,22 @@ export default function SetupInstructions() {
     },
   ];
 
-  const downloadAgent = () => {
-    // This would trigger download of the desktop agent
-    window.open('https://github.com/samuel4121987-afk/24ai-frontend/tree/main/desktop-agent', '_blank');
+  const downloadAgent = async () => {
+    // Download the desktop agent ZIP file with all code included
+    try {
+      const response = await fetch('https://github.com/samuel4121987-afk/24ai-frontend/raw/main/desktop-agent/24ai-desktop-agent.zip');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = '24ai-desktop-agent.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download agent:', error);
+    }
   };
 
   return (

@@ -34,8 +34,8 @@ class AIControlAgent:
         
         # ⚠️ CRITICAL: Default configuration - Now using Render cloud backend
         default_config = {
-            'websocket_url': 'wss://two4ai-backend.onrender.com/ws',
-            'api_url': 'https://two4ai-backend.onrender.com/api'
+            'websocket_url': 'wss://twodai-backend.onrender.com/ws',
+            'api_url': 'https://twodai-backend.onrender.com/api'
         }
         
         if config_file.exists():

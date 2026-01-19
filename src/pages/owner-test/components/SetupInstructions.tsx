@@ -42,20 +42,20 @@ export default function SetupInstructions() {
   ];
 
   const downloadAgent = async () => {
-    // Download the installer application
+    // Download the desktop agent ZIP file with all code included
     try {
-      const response = await fetch('https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/24ai-installer.command');
+      const response = await fetch('https://github.com/samuel4121987-afk/24ai-frontend/raw/main/desktop-agent/24ai-desktop-agent.zip');
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = '24AI-Installer.command';
+      link.download = '24ai-desktop-agent.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Failed to download installer:', error);
+      console.error('Failed to download agent:', error);
     }
   };
 

@@ -42,14 +42,14 @@ export default function SetupInstructions() {
   ];
 
   const downloadAgent = async () => {
-    // Download the install.py installer script
+    // Download the installer application
     try {
-      const response = await fetch('https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/install.py');
+      const response = await fetch('https://raw.githubusercontent.com/samuel4121987-afk/24ai-frontend/main/desktop-agent/24ai-installer.command');
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = '24ai-installer.py';
+      link.download = '24AI-Installer.command';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

@@ -43,6 +43,16 @@ export default function SetupInstructions() {
 
   const downloadAgent = async () => {
     // Download the desktop agent ZIP file with all code included
+    const link = document.createElement('a');
+    link.href = '/24ai-desktop-agent.zip';
+    link.download = '24ai-desktop-agent.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadAgentOld = async () => {
+    // Old method - kept for reference
     try {
       const response = await fetch('https://github.com/samuel4121987-afk/24ai-frontend/raw/main/desktop-agent/24ai-desktop-agent.zip');
       const blob = await response.blob();

@@ -79,13 +79,35 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
     };
   }, [connectionStatus]);
 
+  const parseCommandToAction = (cmd: string) => {
+    const cmdLower = cmd.toLowerCase().trim();
+    
+    // Parse natural language commands into action objects
+    if (cmdLower.includes('youtube') || cmdLower.includes('open youtube')) {
+      return { type: 'open_url', params: { url: 'https://www.youtube.com' } };
+    } else if (cmdLower.includes('google')) {
+      return { type: 'open_url', params: { url: 'https://www.google.com' } };
+    } else if (cmdLower.includes('move mouse')) {
+      if (cmdLower.includes('center')) {
+        return { type: 'mouse_move', params: { x: 960, y: 540 } };
+      }
+      return { type: 'mouse_move', params: { x: 500, y: 500 } };
+    } else if (cmdLower.includes('click')) {
+      return { type: 'mouse_click', params: {} };
+    } else if (cmdLower.startsWith('type ')) {
+      const text = cmd.substring(5).trim();
+      return { type: 'keyboard_type', params: { text } };
+    } else if (cmdLower.startsWith('open ')) {
+      const appName = cmd.substring(5).trim();
+      return { type: 'open_app', params: { app: appName } };
+    } else {
+      // Default: try to open as URL or app
+      return { type: 'open_app', params: { app: cmd } };
+    }
+  };
+
   const handleExecute = async () => {
     if (!command.trim() || isExecuting) return;
-
-    if (!apiKey.trim()) {
-      alert('Please enter your OpenAI API key first!');
-      return;
-    }
 
     const commandId = Date.now().toString();
     addCommand(command);
@@ -94,14 +116,17 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
     try {
       // Send command via WebSocket
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        // Parse command into action object
+        const action = parseCommandToAction(command);
+        
         wsRef.current.send(JSON.stringify({
           type: 'command',
-          command: command,
+          command: action,
           apiKey: apiKey,
           commandId: commandId
         }));
         
-        console.log('Command sent via WebSocket:', command);
+        console.log('Command sent via WebSocket:', command, '-> Action:', action);
         
         // Set a timeout for command execution
         setTimeout(() => {

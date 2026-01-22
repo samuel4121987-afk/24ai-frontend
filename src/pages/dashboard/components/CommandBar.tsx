@@ -214,7 +214,7 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
         {/* Execute Button */}
         <button
           onClick={handleExecute}
-          disabled={!command.trim() || isExecuting || !apiKey.trim()}
+          disabled={!command.trim() || isExecuting}
           className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap cursor-pointer"
         >
           {isExecuting ? (

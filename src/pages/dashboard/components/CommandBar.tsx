@@ -32,8 +32,10 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
   // Setup WebSocket connection
   useEffect(() => {
     if (connectionStatus === 'connected' && !wsRef.current) {
-      const wsUrl = 'wss://twodai-backend.onrender.com/ws';
-      const ws = new WebSocket(`${wsUrl}?code=test-code&client_type=agent`);
+      // Get access code from localStorage (set by AccessCodeModal)
+      const accessCode = localStorage.getItem('owner_access_verified') === 'true' ? 'Samuel1987@!' : 'test-code';
+      const wsUrl = API_CONFIG.WS_URL;
+      const ws = new WebSocket(`${wsUrl}?code=${encodeURIComponent(accessCode)}&client_type=web`);
       
       ws.onopen = () => {
         console.log('WebSocket connected');
@@ -200,8 +202,7 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
             onChange={(e) => setCommand(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type command or use natural language... (e.g., 'Open YouTube', 'Search Google for restaurants')"
-            disabled={connectionStatus !== 'connected' || !apiKey.trim()}
-            className="w-full px-6 py-4 bg-[#21262D] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-6 py-4 bg-[#21262D] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all font-mono text-sm"
           />
           {command && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">
@@ -213,7 +214,7 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
         {/* Execute Button */}
         <button
           onClick={handleExecute}
-          disabled={!command.trim() || isExecuting || connectionStatus !== 'connected' || !apiKey.trim()}
+          disabled={!command.trim() || isExecuting || !apiKey.trim()}
           className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap cursor-pointer"
         >
           {isExecuting ? (

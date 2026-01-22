@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useCommandStore } from '../../../store/commandStore';
-import { API_CONFIG, getApiUrl } from '../../../config/api';
+import { API_CONFIG } from '../../../config/api';
 
 interface CommandBarProps {
   connectionStatus: 'disconnected' | 'connecting' | 'connected';
@@ -9,45 +9,114 @@ interface CommandBarProps {
 
 export default function CommandBar({ connectionStatus }: CommandBarProps) {
   const [command, setCommand] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
   const { addCommand, updateCommandStatus, isExecuting } = useCommandStore();
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // Load API key from localStorage on mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('openai_api_key');
+    if (savedApiKey) {
+      setApiKey(savedApiKey);
+    }
+  }, []);
+
+  // Save API key to localStorage when it changes
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem('openai_api_key', apiKey);
+    }
+  }, [apiKey]);
+
+  // Setup WebSocket connection
+  useEffect(() => {
+    if (connectionStatus === 'connected' && !wsRef.current) {
+      const wsUrl = 'wss://twodai-backend.onrender.com/ws';
+      const ws = new WebSocket(`${wsUrl}?code=test-code&client_type=agent`);
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('WebSocket message:', data);
+          
+          if (data.type === 'command_result') {
+            updateCommandStatus(
+              data.commandId || Date.now().toString(),
+              data.success ? 'success' : 'error',
+              data.executionTime || 0,
+              data.message || data.result || 'Command executed'
+            );
+          }
+        } catch (error) {
+          console.error('WebSocket message error:', error);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        wsRef.current = null;
+      };
+      
+      wsRef.current = ws;
+    }
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, [connectionStatus]);
 
   const handleExecute = async () => {
     if (!command.trim() || isExecuting) return;
+
+    if (!apiKey.trim()) {
+      alert('Please enter your OpenAI API key first!');
+      return;
+    }
 
     const commandId = Date.now().toString();
     addCommand(command);
     const startTime = Date.now();
 
     try {
-      // Send command to Railway backend
-      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.EXECUTE_COMMAND), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Send command via WebSocket
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: 'command',
           command: command,
-          access_code: 'test-code', // This should come from user's session
-        }),
-      });
-
-      const executionTime = Date.now() - startTime;
-
-      if (response.ok) {
-        const data = await response.json();
-        updateCommandStatus(
-          commandId,
-          'success',
-          executionTime,
-          data.message || `Command "${command}" executed successfully`
-        );
+          apiKey: apiKey,
+          commandId: commandId
+        }));
+        
+        console.log('Command sent via WebSocket:', command);
+        
+        // Set a timeout for command execution
+        setTimeout(() => {
+          const executionTime = Date.now() - startTime;
+          updateCommandStatus(
+            commandId,
+            'success',
+            executionTime,
+            `Command "${command}" sent to agent`
+          );
+        }, 1000);
       } else {
-        const error = await response.json();
         updateCommandStatus(
           commandId,
           'error',
-          executionTime,
-          error.detail || 'Command execution failed'
+          0,
+          'WebSocket not connected. Please refresh the page.'
         );
       }
     } catch (error) {
@@ -56,7 +125,7 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
         commandId,
         'error',
         executionTime,
-        `Failed to connect to backend: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to send command: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
 
@@ -80,6 +149,36 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
 
   return (
     <div className="bg-[#161B22] border-b border-gray-800 p-6">
+      {/* API Key Input Row */}
+      <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <i className="ri-key-2-line"></i>
+          <span>OpenAI API Key:</span>
+        </div>
+        <div className="flex-1 relative">
+          <input
+            type={showApiKey ? "text" : "password"}
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="sk-..."
+            className="w-full px-4 py-2 bg-[#21262D] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all font-mono text-xs"
+          />
+        </div>
+        <button
+          onClick={() => setShowApiKey(!showApiKey)}
+          className="px-3 py-2 bg-[#21262D] border border-gray-700 rounded-lg text-gray-400 hover:text-white transition-all"
+        >
+          <i className={showApiKey ? "ri-eye-off-line" : "ri-eye-line"}></i>
+        </button>
+        {apiKey && (
+          <div className="text-xs text-green-400 flex items-center gap-1">
+            <i className="ri-checkbox-circle-fill"></i>
+            Saved
+          </div>
+        )}
+      </div>
+
+      {/* Command Input Row */}
       <div className="flex items-center gap-4">
         {/* Connection Status */}
         <div className="flex items-center gap-2 px-4 py-2 bg-[#21262D] rounded-xl border border-gray-700">
@@ -101,7 +200,7 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
             onChange={(e) => setCommand(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type command or use natural language... (e.g., 'Open YouTube', 'Search Google for restaurants')"
-            disabled={connectionStatus !== 'connected'}
+            disabled={connectionStatus !== 'connected' || !apiKey.trim()}
             className="w-full px-6 py-4 bg-[#21262D] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20 transition-all font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           />
           {command && (
@@ -114,7 +213,7 @@ export default function CommandBar({ connectionStatus }: CommandBarProps) {
         {/* Execute Button */}
         <button
           onClick={handleExecute}
-          disabled={!command.trim() || isExecuting || connectionStatus !== 'connected'}
+          disabled={!command.trim() || isExecuting || connectionStatus !== 'connected' || !apiKey.trim()}
           className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap cursor-pointer"
         >
           {isExecuting ? (

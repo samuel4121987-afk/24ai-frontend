@@ -15,11 +15,12 @@ export default function HomePage() {
   const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/owner-test');
-    }
-  }, [isAuthenticated, navigate]);
+  // Removed auto-redirect to allow logged-in users to view home page
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     navigate('/owner-test');
+  //   }
+  // }, [isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen bg-white">

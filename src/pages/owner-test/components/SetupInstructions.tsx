@@ -44,7 +44,7 @@ export default function SetupInstructions() {
   const downloadAgent = async () => {
     try {
       // Call the backend API to download the agent package
-      const response = await fetch('https://24ai-backend-production.up.railway.app/api/download-agent');
+      const response = await fetch('https://24ai-backend-production-fa9b.up.railway.app/api/download-agent');
       
       if (!response.ok) {
         throw new Error('Failed to download agent package');
@@ -182,11 +182,11 @@ export default function SetupInstructions() {
                 <div className="space-y-1 font-mono text-xs">
                   <div className="flex items-center gap-2">
                     <span className="text-purple-400">API:</span>
-                    <span className="text-purple-300">https://24ai-backend-production.up.railway.app</span>
+                    <span className="text-purple-300">https://24ai-backend-production-fa9b.up.railway.app</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-purple-400">WebSocket:</span>
-                    <span className="text-purple-300">wss://24ai-backend-production.up.railway.app/ws</span>
+                    <span className="text-purple-300">wss://24ai-backend-production-fa9b.up.railway.app/ws</span>
                   </div>
                 </div>
               </div>

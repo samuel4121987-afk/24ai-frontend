@@ -14,7 +14,7 @@ export default function InstallAgentModal({ onClose, onConnect, connectionStatus
   const handleDownload = async () => {
     try {
       // Call the backend API to download the agent package
-      const response = await fetch('https://24ai-backend-production.up.railway.app/api/download-agent');
+      const response = await fetch('https://24ai-backend-production-fa9b.up.railway.app/api/download-agent');
       
       if (!response.ok) {
         throw new Error('Failed to download agent package');

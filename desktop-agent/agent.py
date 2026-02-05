@@ -32,10 +32,10 @@ class AIControlAgent:
         """Load agent configuration with default fallback"""
         config_file = Path.home() / '.ai-control-agent' / 'config.json'
         
-        # ⚠️ CRITICAL: Default configuration - Now using Railway cloud backend
+        # ⚠️ CRITICAL: Default configuration - Now using Render cloud backend
         default_config = {
-            'websocket_url': 'wss://24ai-backend-production.up.railway.app/ws',
-            'api_url': 'https://24ai-backend-production.up.railway.app/api'
+            'websocket_url': 'wss://twodai-backend.onrender.com/ws',
+            'api_url': 'https://twodai-backend.onrender.com/api'
         }
         
         if config_file.exists():

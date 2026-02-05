@@ -1,9 +1,9 @@
 // API Configuration for Production Deployment
 
 export const API_CONFIG = {
-  // Railway Backend URLs
-  BACKEND_URL: 'https://24ai-backend-production.up.railway.app',
-  WS_URL: 'wss://24ai-backend-production.up.railway.app/ws',
+  // Render Backend URLs
+  BACKEND_URL: 'https://two4ai-backend.onrender.com',
+  WS_URL: 'wss://two4ai-backend.onrender.com/ws',
   
   // API Endpoints
   ENDPOINTS: {
@@ -14,8 +14,8 @@ export const API_CONFIG = {
   
   // WebSocket Paths
   WS_PATHS: {
-    AGENT: (accessCode: string) => `/ws/agent/${accessCode}`,
-    DASHBOARD: (accessCode: string) => `/ws/dashboard/${accessCode}`,
+    AGENT: (accessCode: string) => `/ws?code=${accessCode}&client_type=agent`,
+    DASHBOARD: (accessCode: string) => `/ws?code=${accessCode}&client_type=web`
   },
   
   // Screen Capture Settings

@@ -3,8 +3,8 @@
 
 const isDevelopment = import.meta.env.DEV;
 
-// 🚀 PRODUCTION: Railway Backend URL
-const PRODUCTION_BACKEND_URL = 'https://24ai-backend-production.up.railway.app';
+// 🚀 PRODUCTION: Render Backend URL
+const PRODUCTION_BACKEND_URL = 'https://two4ai-backend.onrender.com';
 
 // Local development URL
 const DEVELOPMENT_BACKEND_URL = 'http://localhost:8000';

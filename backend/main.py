@@ -5,6 +5,7 @@ Handles authentication, WebSocket connections, and ChatGPT API integration
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import openai
 import json
@@ -12,6 +13,9 @@ import asyncio
 from typing import Dict, Set
 import os
 from datetime import datetime
+import zipfile
+import tempfile
+from pathlib import Path
 
 app = FastAPI(title="AI Control API")
 
@@ -99,12 +103,14 @@ async def websocket_endpoint(websocket: WebSocket, code: str, client_type: str =
                 # Handle command from web client
                 if data.get('type') == 'command':
                     command_text = data.get('command')
-                    api_key = data.get('apiKey')
+                    
+                    # Get API key from environment variable
+                    api_key = os.getenv('OPENAI_API_KEY')
                     
                     if not api_key or not api_key.startswith('sk-'):
                         await websocket.send_json({
                             'type': 'error',
-                            'message': 'Invalid API key. Please set your OpenAI API key first.'
+                            'message': 'OpenAI API key not configured on server. Please contact administrator.'
                         })
                         continue
                     
@@ -204,6 +210,77 @@ Be intelligent and break down ANY task into executable steps."""
             manager.disconnect_web(code)
         else:
             manager.disconnect_agent(code)
+
+@app.get("/api/download-agent")
+async def download_agent():
+    """Generate and serve the desktop agent package as a zip file"""
+    try:
+        # Get the desktop-agent directory path
+        backend_dir = Path(__file__).parent
+        project_root = backend_dir.parent
+        agent_dir = project_root / "desktop-agent"
+        
+        if not agent_dir.exists():
+            raise HTTPException(status_code=404, detail="Desktop agent files not found")
+        
+        # Create a temporary zip file
+        temp_dir = tempfile.gettempdir()
+        zip_path = os.path.join(temp_dir, "24ai-desktop-agent.zip")
+        
+        # Create the zip file
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            # Add agent.py
+            agent_py = agent_dir / "agent.py"
+            if agent_py.exists():
+                zipf.write(agent_py, "24ai-desktop-agent/agent.py")
+            
+            # Add requirements.txt
+            requirements = agent_dir / "requirements.txt"
+            if requirements.exists():
+                zipf.write(requirements, "24ai-desktop-agent/requirements.txt")
+            
+            # Add install.py
+            install_py = agent_dir / "install.py"
+            if install_py.exists():
+                zipf.write(install_py, "24ai-desktop-agent/install.py")
+            
+            # Create a simple installer script for Mac/Linux
+            installer_script = """#!/bin/bash
+# 24/7 AI Control Assistant Installer
+
+echo "Installing 24/7 AI Control Assistant..."
+echo "======================================"
+
+# Check if Python 3 is installed
+if ! command -v python3 &> /dev/null; then
+    echo "Error: Python 3 is required but not installed."
+    echo "Please install Python 3 and try again."
+    exit 1
+fi
+
+# Install Python dependencies
+echo "Installing dependencies..."
+python3 -m pip install -r requirements.txt
+
+# Run the installer
+echo "Running installer..."
+python3 install.py
+
+echo ""
+echo "Installation complete!"
+echo "You can now run the agent with: python3 agent.py"
+"""
+            zipf.writestr("24ai-desktop-agent/24ai-installer.command", installer_script)
+        
+        # Return the zip file
+        return FileResponse(
+            path=zip_path,
+            media_type="application/zip",
+            filename="24ai-desktop-agent.zip"
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating package: {str(e)}")
 
 @app.get("/api/health")
 async def health_check():

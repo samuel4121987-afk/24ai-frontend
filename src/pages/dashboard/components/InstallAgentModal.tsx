@@ -11,20 +11,36 @@ export default function InstallAgentModal({ onClose, onConnect, connectionStatus
   const [selectedOS, setSelectedOS] = useState<'windows' | 'mac' | 'linux'>('windows');
   const [installStep, setInstallStep] = useState<'download' | 'install' | 'connect'>('download');
 
-  const downloadLinks = {
-    windows: 'https://24ai.org.es/downloads/ai-control-agent-windows.exe',
-    mac: 'https://24ai.org.es/downloads/ai-control-agent-mac.dmg',
-    linux: 'https://24ai.org.es/downloads/ai-control-agent-linux.deb'
-  };
-
-  const handleDownload = () => {
-    // Simulate download
-    const link = document.createElement('a');
-    link.href = downloadLinks[selectedOS];
-    link.download = `ai-control-agent-${selectedOS}`;
-    // link.click(); // Commented out for demo
-    
-    setInstallStep('install');
+  const handleDownload = async () => {
+    try {
+      // Call the backend API to download the agent package
+      const response = await fetch('https://24ai-backend-production.up.railway.app/api/download-agent');
+      
+      if (!response.ok) {
+        throw new Error('Failed to download agent package');
+      }
+      
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Create a download link and trigger it
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '24ai-desktop-agent.zip';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      // Move to next step
+      setInstallStep('install');
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download the agent package. Please try again or contact support.');
+    }
   };
 
   const handleInstall = () => {
